@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import { object, string } from "yup";
 
-interface UserDocument extends Document {
+export interface UserDocument extends mongoose.Document {
   name: string;
   email: string;
   password: string;

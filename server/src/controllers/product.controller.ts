@@ -1,7 +1,7 @@
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import cloudUploader from "src/cloud";
-import { Product } from "src/models/product.model";
-import { User } from "src/models/users.model";
+import { categories, Product } from "src/models/product.model";
+import { User, UserDocument } from "src/models/users.model";
 import { ApiError, ApiResponse, asyncHandler } from "src/utils/helper";
 
 async function uploadImage(filepath: string) {
@@ -115,7 +115,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   let inavalidFileType = false;
 
   if (Array.isArray(images)) {
-    if (product.images.length + images.length > 5)
+    if (product.images!.length + images.length > 5)
       throw new ApiError("Images should not be more than 5", 422);
     for (let img of images) {
       if (!img.mimetype?.startsWith("image")) {
@@ -123,7 +123,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         break;
       }
       const { url, id } = await uploadImage(img.filepath);
-      product.images.push({ url, id });
+      product.images!.push({ url, id });
     }
   } else {
     if (images) {
@@ -131,7 +131,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         inavalidFileType = true;
       } else {
         const { url, id } = await uploadImage(images.filepath);
-        product.images.push({ url, id });
+        product.images!.push({ url, id });
       }
     }
   }
@@ -174,7 +174,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   });
   if (!product) throw new ApiError("product not found", 404);
 
-  product.images.map(async ({ id }) => {
+  product.images!.map(async ({ id }) => {
     await cloudUploader.destroy(id);
   });
 
@@ -193,7 +193,7 @@ export const deleteProductImage = asyncHandler(async (req, res) => {
 
   const updatedImages = [];
 
-  for (const { id, url } of product.images) {
+  for (const { id, url } of product.images!) {
     if (id === imageId) {
       await cloudUploader.destroy(id);
       continue;
@@ -203,7 +203,7 @@ export const deleteProductImage = asyncHandler(async (req, res) => {
 
   product.images = updatedImages;
 
-  if (product.thumbnail.includes(imageId)) {
+  if (product.thumbnail!.includes(imageId)) {
     product.thumbnail = product.images[0].url;
   }
 
@@ -227,7 +227,108 @@ export const deleteProductImage = asyncHandler(async (req, res) => {
     )
   );
 });
-export const getProduct = asyncHandler(async (req, res) => {});
-export const getProductByCategory = asyncHandler(async (req, res) => {});
-export const getLatestProduct = asyncHandler(async (req, res) => {});
-export const getListedAllProduct = asyncHandler(async (req, res) => {});
+
+export const getProduct = asyncHandler(async (req, res) => {
+
+  const { id } = req.params
+
+  const product = await Product.findById({
+    _id: new mongoose.Types.ObjectId(id)
+  }).populate<{ owner: UserDocument }>("owner")
+
+  if (!product) throw new ApiError("No product found", 404)
+
+  res.status(200).json(new ApiResponse("Product data has been fetched", {
+    product: {
+      id: product._id,
+      name: product.name,
+      description: product.description,
+      thumbnail: product.thumbnail,
+      category: product.category,
+      date: product.purchasingDate,
+      price: product.price,
+      images: product.images?.map(image => image.url),
+      seller: {
+        id: product.owner._id,
+        name: product.owner.name,
+        avatar: product.owner.avatar!.url
+      }
+
+    }
+  }, 200))
+
+});
+
+export const getProductByCategory = asyncHandler(async (req, res) => {
+  let { category } = req.params
+  const { pageNo = "1", limit = "10" } = req.query as { pageNo: string, limit: string }
+
+  category = category.charAt(0).toUpperCase() + category.slice(1)
+
+  if (!categories.includes(category)) throw new ApiError("Invalid category", 422)
+
+  const products = await Product.find({ category }).sort("-createdAt").skip((+pageNo - 1) * (+limit)).limit(+limit)
+
+  if (products.length <= 0) throw new ApiError("No product found for that category", 404)
+
+  const formattedProduct = products.map(p => ({
+    id: p._id,
+    name: p.name,
+    thumbnail: p.thumbnail,
+    category: p.category,
+    price: p.price
+  }))
+
+  res.status(200).json(new ApiResponse(`All products from ${category} are fetched `, { product: formattedProduct }, 200))
+});
+
+export const getLatestProduct = asyncHandler(async (req, res) => {
+  console.log("reached here")
+  const { pageNo = "1", limit = "10" } = req.query as { pageNo: string, limit: string }
+
+  const products = await Product.find({}).sort("-createAt").skip((+pageNo - 1) * +limit).limit(+limit)
+
+  if (products.length <= 0) throw new ApiError("No product found ", 404)
+
+  const formattedProduct = products.map(p => ({
+    id: p._id,
+    name: p.name,
+    thumbnail: p.thumbnail,
+    category: p.category,
+    price: p.price
+  }))
+
+  res.status(200).json(new ApiResponse(`All products  are fetched `, { product: formattedProduct }, 200))
+});
+
+export const getListedAllProduct = asyncHandler(async (req, res) => {
+  const { pageNo = "1", limit = "10" } = req.query as { pageNo: string, limit: string }
+
+  const userid = new mongoose.Types.ObjectId(req.user!.id)
+
+  const products = await Product.find({
+    owner: userid
+  }).sort("-createAt").skip((+pageNo - 1) * +limit).limit(+limit)
+
+  if (!products) throw new ApiError("No product found", 404)
+
+  const formattedProduct = products.map(p => ({
+    id: p._id,
+    name: p.name,
+    thumbnail: p.thumbnail,
+    category: p.category,
+    price: p.price,
+    image: p.images?.map(i => i.url),
+    description: p.description,
+    date: p.purchasingDate,
+    seller: {
+      id: req!.user.id,
+      name: req.user.name,
+      avatar: req.user.avatar
+    }
+  }))
+
+  res.status(200).json(new ApiResponse(`All products  are fetched `, {
+    product: formattedProduct
+  }, 200))
+});

@@ -9,6 +9,7 @@ interface UserProfile {
   name: string;
   email: string;
   verified: boolean;
+  avatar?: string;
 }
 declare global {
   namespace Express {
@@ -41,6 +42,7 @@ export const isAuth = asyncHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       verified: user.verified,
+      avatar: user.avatar?.url
     };
   } catch (error) {
     if (error instanceof TokenExpiredError) {

@@ -224,9 +224,8 @@ export const getForgetPasswordLink = asyncHandler(async (req, res) => {
 
   await PasswordResetToken.create({ owner: user._id, token: token });
 
-  const link = `${process.env.BASE_URL!}/reset-password.html?id=${
-    user._id
-  }&token=${token}`;
+  const link = `${process.env.BASE_URL!}/reset-password.html?id=${user._id
+    }&token=${token}`;
 
   const mail = new MyMail(email, link);
   mail.sendPasswordResetLink();

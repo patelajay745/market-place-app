@@ -16,23 +16,23 @@ import { newProductSchema } from "src/utils/validationSchema";
 
 export const productRouter = Router();
 
-productRouter.use(isAuth);
+productRouter.get("/latest", getLatestProduct);
+productRouter.get("/by-category/:category", getProductByCategory);
 
 productRouter.post(
   "/list",
-  fileParser,
+  fileParser, isAuth,
   validate(newProductSchema),
   listProduct
 );
 productRouter.patch(
   "/:id",
-  fileParser,
+  fileParser, isAuth,
   validate(newProductSchema),
   updateProduct
 );
-productRouter.delete("/:id", deleteProduct);
-productRouter.delete("/image/:productId/:imageId", deleteProductImage);
-productRouter.get("/:id", getProduct);
-productRouter.get("/by-category/:category", getProductByCategory);
-productRouter.get("/latest", getLatestProduct);
-productRouter.get("/listings", getListedAllProduct);
+productRouter.delete("/:id", isAuth, deleteProduct);
+productRouter.delete("/image/:productId/:imageId", isAuth, deleteProductImage);
+productRouter.get("/listings", isAuth, getListedAllProduct);
+productRouter.get("/details/:id", getProduct);
+
