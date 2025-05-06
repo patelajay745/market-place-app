@@ -1,27 +1,47 @@
-import { Colors } from '@/constants/Colors';
-import { FC } from 'react'
-import { View, StyleSheet, TextInput } from 'react-native'
-import { useColorScheme } from 'react-native';
+import { FC, useState } from "react";
+import { View, StyleSheet, TextInput, TextInputProps } from "react-native";
+import { useColorScheme } from "react-native";
+import colors from "@/utils/colors";
+import { useTheme } from "@react-navigation/native";
 
-interface Props { }
-
-const colorScheme = useColorScheme();
-const isDarkTheme = colorScheme === 'dark'
+interface Props extends TextInputProps {}
 
 const FormInput: FC<Props> = (props) => {
-    return <TextInput value='' style={styles.input} placeholder='Email' placeholderTextColor={isDarkTheme ? Colors.dark.primary : Colors.light.primary}></TextInput>
-}
+  const [isFocused, setIsFocused] = useState(false);
+  return (
+    <TextInput
+      style={[
+        styles.input,
+        isFocused ? styles.borderActive : styles.borderDeActive,
+      ]}
+      placeholderTextColor={colors.SecondaryText}
+      onBlur={() => {
+        setIsFocused(false);
+      }}
+      onFocus={() => {
+        setIsFocused(true);
+      }}
+      {...props}
+    ></TextInput>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {},
-    input: {
-        width: "100%",
-        padding: 8,
-        borderRadius: 5,
-        marginBottom: 15,
-        color: isDarkTheme ? Colors.dark.primary : Colors.light.primary,
-        borderWidth: 1
-    },
-})
+  container: {},
+  input: {
+    width: "100%",
+    padding: 8,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  borderDeActive: {
+    borderWidth: 1,
+    borderColor: colors.deActive,
+  },
+  borderActive: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+});
 
-export default FormInput
+export default FormInput;
