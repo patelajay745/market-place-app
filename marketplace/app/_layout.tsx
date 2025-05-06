@@ -1,8 +1,9 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+
 import { useColorScheme } from '@/hooks/useColorScheme';
 import SignIn from '@views/SignIn';
-import { StyleSheet, View } from 'react-native';
+import { Platform, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -17,9 +18,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <SignIn />
-      </View>
+      </SafeAreaView>
     </ThemeProvider>
   );
 }
@@ -29,6 +30,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
     alignItems: "center",
-    justifyContent: "center"
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   }
 })
