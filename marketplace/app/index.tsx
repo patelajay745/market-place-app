@@ -5,10 +5,9 @@ import SignIn from "@/views/SignIn";
 import SignUp from "@/views/SignUp";
 import ForgetPassword from "@/views/ForgetPassword";
 import colors from "./utils/colors";
+import "../global.css";
 
 const Stack = createNativeStackNavigator();
-
-
 
 function RootStack() {
   return (

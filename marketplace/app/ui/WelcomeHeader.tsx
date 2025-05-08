@@ -1,6 +1,5 @@
 import { FC } from "react";
 import {
-  View,
   StyleSheet,
   Text,
   Image,
@@ -10,6 +9,7 @@ import {
 } from "react-native";
 import colors from "@/utils/colors";
 import { useTheme } from "@react-navigation/native";
+import { cn } from "@/utils/cn";
 
 interface Props {}
 
@@ -21,48 +21,31 @@ const WelcomeHeader: FC<Props> = (props) => {
   const theme = useTheme();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      className={cn(
+        "flex-1 items-center",
+        Platform.OS === "android" ? `pt-${StatusBar.currentHeight}` : 0
+      )}
+    >
       <Image
         source={require("../../assets/images/hero.png")}
-        style={styles.image}
+        className="w-[250] h-[250]"
         resizeMode="contain"
         resizeMethod="resize"
       />
       <Text
-        style={[
-          styles.heading,
-          { color: theme.dark ? colors.white : colors.primary },
-        ]}
+        className={cn(
+          "font-semibold text-2xl text-center tracking-normal mb-1",
+          theme.dark ? "text-white" : "text-primary"
+        )}
       >
         {heading}
       </Text>
-      <Text style={styles.subHeading}>{subHeading}</Text>
+      <Text className="text-secondaryText text-sm/4 text-center ">
+        {subHeading}
+      </Text>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-  },
-  heading: {
-    fontWeight: "600",
-    fontSize: 20,
-    textAlign: "center",
-    letterSpacing: 1,
-    marginBottom: 5,
-  },
-  subHeading: {
-    fontSize: 12,
-    textAlign: "center",
-    lineHeight: 14,
-    color: colors.SecondaryText,
-  },
-  image: {
-    width: 250,
-    height: 250,
-  },
-});
 
 export default WelcomeHeader;

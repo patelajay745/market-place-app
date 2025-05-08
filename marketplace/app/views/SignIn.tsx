@@ -18,6 +18,7 @@ import AppButton from "@/ui/AppButton";
 import FormDivider from "@/ui/FormDivider";
 import FormNavigator from "@/ui/FormNavigator";
 import CustomKeyAvoidingView from "@/ui/CustomKeyAvoidingView";
+import { useNavigation } from "@react-navigation/native";
 
 interface Props {}
 
@@ -25,6 +26,7 @@ const colorScheme = useColorScheme();
 const isDarkTheme = colorScheme === "dark";
 
 const SignIn: FC<Props> = (props) => {
+  const navigation = useNavigation();
   return (
     <CustomKeyAvoidingView>
       <View style={styles.innerContainer}>

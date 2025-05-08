@@ -1,36 +1,26 @@
-import colors from '@/utils/colors'
-import { FC } from 'react'
-import { View, StyleSheet, Pressable, Text } from 'react-native'
+import { cn } from "@/utils/cn";
+import colors from "@/utils/colors";
+import { FC } from "react";
+import { View, StyleSheet, Pressable, Text } from "react-native";
 
 interface Props {
-    title: string,
-    active?: boolean,
-    onPress?(): void
+  title: string;
+  active?: boolean;
+  onPress?(): void;
 }
 
 const AppButton: FC<Props> = ({ title, active = true, onPress }) => {
-    return <Pressable onPress={onPress} style={[styles.container, active ? styles.btnActive : styles.btnDeActive]}>
-        <Text style={styles.title}>{title}</Text>
+  return (
+    <Pressable
+      onPress={onPress}
+      className={cn(
+        "p-5 rounded-2xl flex-1 justify-center bg-black items-center",
+        active ? "bg-primary" : "bg-deActive"
+      )}
+    >
+      <Text className="text-white tracking-normal font-bold">{title}</Text>
     </Pressable>
-}
+  );
+};
 
-const styles = StyleSheet.create({
-    container: {
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    btnActive: {
-        backgroundColor: colors.primary
-    },
-    btnDeActive: {
-        backgroundColor: colors.deActive
-    },
-    title: {
-        color: colors.white,
-        fontWeight: '700',
-        letterSpacing: 1
-    }
-})
-
-export default AppButton
+export default AppButton;
